@@ -5,6 +5,7 @@ const express = require('express');
 const authentication = require('./routes/authentication');
 const users = require('./routes/users');
 const keys = require('./routes/keys');
+const dashboard = require('./routes/dashboard');
 
 //Create app
 const app = express();
@@ -13,5 +14,7 @@ const app = express();
 app.use('/api', authentication);
 app.use('/api/users', users);
 app.use('/api/keys', keys);
+app.use('/api/dashboard', dashboard);
+
 
 module.exports = app;
