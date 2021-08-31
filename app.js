@@ -1,10 +1,13 @@
 require("dotenv").config();
 const express = require('express');
 
+//import routes
+const users = require('./routes/users');
+
+//Create app
 const app = express();
 
-app.get('/', (req, res) => {
-  res.status(200).send('Welcome');
-});
+//Router
+app.use('/api/users', users);
 
 module.exports = app;
