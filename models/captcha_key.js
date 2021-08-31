@@ -1,5 +1,5 @@
 module.exports = (sequelize, Sequelize) => {
-  const CaptchaKey = Sequelize.define(
+  const CaptchaKey = sequelize.define(
     //Table name
     'captcha_key', 
     {

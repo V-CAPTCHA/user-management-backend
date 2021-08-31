@@ -1,5 +1,5 @@
 module.exports = (sequelize, Sequelize) => {
-  const AuthenAction = Sequelize.define(
+  const AuthenAction = sequelize.define(
     //Table name
     'authen_action', 
     {
