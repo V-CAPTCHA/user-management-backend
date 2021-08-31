@@ -9,6 +9,8 @@ const dashboard = require('./routes/dashboard.routes');
 
 //Create app
 const app = express();
+app.use(express.json());
+
 
 //Router
 app.use('/api', authentication);
