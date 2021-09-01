@@ -82,4 +82,70 @@ router.post('/register', async (req, res) => {
   });
 });
 
+
+//Request to reset password
+router.post('/resetpassword', async (req, res) => {
+  const email = req.body.email;
+
+  //check null email
+  if (!email) return res.status(400).json({ "message": "email is required" });
+
+  //check user in db
+  const user = await User.findOne({ where: { email: email }});
+
+  if (!user)
+    return res.status(400).json({"message": "user does not exist "})
+
+  //create token for reset password
+  const token = jwt.sign(
+    { 
+      user_id: user.user_id,
+      purpose: 'reset_password',
+    },
+    process.env.SECRET_KEY,
+    { expiresIn: '7d' }
+  );
+
+  /*
+    Send link to reset password to email
+  */
+
+  res.status(200).json({
+    'message': 'send link to reset password successfully',
+  });
+});
+
+
+//Reset password
+router.post('/resetpassword/:id', async (req, res) => {
+  const token = req.params.id;
+  const new_password = await bcrypt.hash(req.body.new_password, 10);
+  var user_id = '';
+
+  //verify reset password token
+  jwt.verify(token, process.env.SECRET_KEY, (err, decoded) => {
+    //if token error
+    if (err) return res.status(400).json({"message": "token expired"});
+
+    if (decoded.purpose === 'reset_password') 
+      user_id = decoded.user_id;
+  });
+
+  //check user in db
+  const user = await User.findOne({ where: { user_id: user_id } });
+
+  if (!user) 
+    return res.status(400).json({"message": "user does not exist"});
+
+  //update password
+  user.password = new_password;
+  await user.save();
+
+  //response
+  res.status(200).json({
+    'message': 'reset password sucessfully'
+  });
+
+});
+
 module.exports = router;
