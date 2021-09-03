@@ -7,6 +7,10 @@ const db = require('../config/database.config');
 const User = db.user;
 
 
+//Mailer
+const transporter = require('../config/mailer.config');
+
+
 //Login
 router.post('/login', async (req, res) => {
   const email = req.body.email;
@@ -106,9 +110,22 @@ router.post('/resetpassword', async (req, res) => {
     { expiresIn: '7d' }
   );
 
-  /*
-    Send link to reset password to email
-  */
+  //Send link to reset password to email
+  const mail = await transporter.sendMail({
+    from: '"VCaptcha" <vcaptcha@gmail.com>',
+    to: email,
+    subject: 'รีเซ็ตรหัสผ่าน VCaptcha',
+    text: "ดูเหมือนว่าคุณได้ขอรีเซ็ตรหัสผ่านสำหรับบัญชี VCaptcha ของคุณ",
+    html: `
+      <h3>สวัสดี, ${user.first_name} ${user.last_name}!</h3>
+      <p>ดูเหมือนว่าคุณได้ขอรีเซ็ตรหัสผ่านสำหรับบัญชี VCaptcha ของคุณ</p>
+      <p>หากคุณไม่ได้เป็นคนขอรีเซ็ตรหัสผ่านนี้ คุณสามารถเพิกเฉยอีเมล์นี้ได้อย่างปลอดภัย</p>
+      <p>หรือคลิกที่ลิงก์ด้านล่างนี้เพื่อรีเซ็ตรหัสผ่าน</p>
+      <a href="${process.env.APP_URL}/resetpassword/${token}">รีเซ็ตรหัสผ่าน</a>
+    `
+  }).catch((error) => {
+    console.log(error);
+  })
 
   res.status(200).json({
     'message': 'send link to reset password successfully',
