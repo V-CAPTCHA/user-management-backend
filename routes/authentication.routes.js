@@ -134,8 +134,8 @@ router.post('/resetpassword', async (req, res) => {
 
 
 //Reset password
-router.post('/resetpassword/:id', async (req, res) => {
-  const token = req.params.id;
+router.put('/resetpassword', async (req, res) => {
+  const token = req.body.token;
   const new_password = await bcrypt.hash(req.body.new_password, 10);
   var user_id = '';
 
