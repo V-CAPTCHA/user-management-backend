@@ -9,7 +9,7 @@ const verifyToken = (req, res, next) => {
     jwt.verify(token, process.env.SECRET_KEY, (err, user) => {
       //invalid token
       if (err) {
-        return res.json(403).json({'message': 'invalid token'})
+        return res.status(403).json({'message': 'invalid token'})
       }
 
       //set user info to res.locals
