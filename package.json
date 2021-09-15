@@ -26,7 +26,7 @@
     "type": "git",
     "url": "git+https://github.com/V-CAPTCHA/user-management-backend.git"
   },
-  "author": "",
+  "author": "vcaptcha",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/V-CAPTCHA/user-management-backend/issues"
