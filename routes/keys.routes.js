@@ -158,4 +158,35 @@ router.patch('/:key_id', async (req, res) => {
   });
 });
 
+
+//Delete key
+router.delete('/:key_id', async (req, res) => {
+  const key_id = req.params.key_id;
+  const user_id = res.locals.user.user_id;
+
+  //find user's key in db
+  const key = await CaptchaKey.findOne({
+    where: {
+      user_id: user_id,
+      key_id: key_id,
+    }
+  });
+
+  if(!key) {
+    return res.status(400).json({"message": "key does not exist"});
+  }
+
+  //delete key
+  await CaptchaKey.destroy({
+    where: { 
+      user_id: user_id, 
+      key_id: key_id, 
+    }
+  });
+
+  res.status(200).json({
+    "message": "delete key successfully"
+  });
+});
+
 module.exports = router;
