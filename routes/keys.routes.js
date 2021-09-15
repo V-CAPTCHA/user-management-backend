@@ -113,4 +113,49 @@ router.post('/', async (req, res) => {
   });
 });
 
+
+//Edit key
+router.patch('/:key_id', async (req, res) => {
+  const user_id = res.locals.user.user_id;
+  const key_id = req.params.key_id;
+  const new_key_name = req.body.key_name;
+  const new_domain = req.body.domain;
+
+  //check null key info
+  if(!new_key_name || !new_domain) {
+    return res.status(400).json({"message": "key info is required"});
+  }
+
+  //find user's key in db
+  const key = await CaptchaKey.findOne({
+    where: {
+      user_id: user_id,
+      key_id: key_id,
+    }
+  });
+
+  if(!key) {
+    return res.status(400).json({"message": "key does not exist"});
+  }
+
+  //edit key
+  await CaptchaKey.update(
+    {
+      key_name: new_key_name,
+      domain: new_domain,
+    },
+    { 
+      where: { 
+        user_id: user_id, 
+        key_id: key_id, 
+      }
+    }
+  );
+
+  //response
+  res.status(200).json({
+    "message": "edit key successfully"
+  });
+});
+
 module.exports = router;
