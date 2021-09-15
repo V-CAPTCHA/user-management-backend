@@ -89,14 +89,13 @@ router.post('/', async (req, res) => {
   }
 
   //check domain in db
-  const key = await CaptchaKey.findOne({where: {
+  const {count , row } = await CaptchaKey.findAndCountAll({where: {
     user_id: user_id,
-    domain: domain,
   }});
 
-  //if domain already exist
-  if(key) {
-    return res.status(400).json({"message": "domain already exist"});
+  //if key has more than 5
+  if(count >= 5) {
+    return res.status(400).json({"message": "Your keys has reached its activation limit"});
   }
 
   //create key
@@ -113,6 +112,5 @@ router.post('/', async (req, res) => {
     "message": "create key successfully"
   });
 });
-
 
 module.exports = router;
