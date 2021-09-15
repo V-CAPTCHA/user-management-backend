@@ -8,8 +8,8 @@ const CaptchaKey = db.captcha_key;
 router.get('/', async (req, res) => {
   const user_id = res.locals.user.user_id;
 
-  //find all key of user in db
-  const keys = await CaptchaKey.findAll({
+  //find and count all key of user in db
+  const {count, rows} = await CaptchaKey.findAndCountAll({
     attributes: [
       'key_id',
       'key_name',
@@ -20,12 +20,18 @@ router.get('/', async (req, res) => {
     where: {
       user_id: user_id
     }
-  })
+  });
 
-  res.status(200).json({
-    "message": "get all keys successfully",
-    "data": keys
-  })
-})
+  //if key is null
+  if(!count) {
+    return res.status(200).json({"message": "key does not exist"});
+  }
+  else {
+    res.status(200).json({
+      "message": "get all keys successfully",
+      "data": rows
+    })
+  }
+});
 
 module.exports = router;
