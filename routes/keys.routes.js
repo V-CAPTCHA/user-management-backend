@@ -1,4 +1,6 @@
 const router = require('express').Router();
+const { nanoid } = require('nanoid');
+const moment = require('moment');
 
 //Use sequelize model
 const db = require('../config/database.config');
@@ -73,6 +75,44 @@ router.get('/:key_value', async (req, res) => {
 });
 
 
+//Create new key
+router.post('/', async (req, res) => {
+  const key_name = req.body.key_name;
+  const creation_date = moment().format('YYYY-MM-DD');
+  const domain = req.body.domain;
+  const user_id = res.locals.user.user_id;
+  const key_value = nanoid();
+
+  //check null key info
+  if(!user_id || !key_name || !domain) {
+    return res.status(400).json({"message": "key info is required"});
+  }
+
+  //check domain in db
+  const key = await CaptchaKey.findOne({where: {
+    user_id: user_id,
+    domain: domain,
+  }});
+
+  //if domain already exist
+  if(key) {
+    return res.status(400).json({"message": "domain already exist"});
+  }
+
+  //create key
+  await CaptchaKey.create({
+    key_name: key_name,
+    creation_date: creation_date,
+    domain: domain,
+    user_id: user_id,
+    key_value: key_value,
+  });
+
+  //response
+  res.status(200).json({
+    "message": "create key successfully"
+  });
+});
 
 
 module.exports = router;
