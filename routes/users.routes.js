@@ -100,3 +100,45 @@ router.delete('/', async (req, res) => {
     "message": "delete account successfully"
   });
 });
+
+
+//Change password
+router.post('/password', async (req, res) => {
+  const current_password = req.body.current_password;
+  const new_password = req.body.new_password;
+  const user_id = res.locals.user.user_id;
+
+  //check null password 
+  if(!current_password || !new_password) {
+    return res.status(400).json({ "message": "password is required" })
+  }
+
+  //find user in db
+  const user = await User.findOne({ 
+    where: { user_id: user_id }
+  });
+
+  if(!user)
+    return res.status(400).json({"message": "user does not exist "});
+
+  //compare password
+  const isMatch = await bcrypt.compare(current_password, user.password);
+
+  //correct password
+  if(isMatch) {
+    //hash new password
+    const hashNewPassword = await bcrypt.hash(new_password, 8);
+
+    //change password
+    await User.update({ password: hashNewPassword },
+      { where : { user_id: user_id }}
+    );
+
+    //response
+    res.status(200).json({"message": "change password successfully"})
+  }  
+  //incorrect password
+  else {
+    res.status(401).json({"message": "incorrect current password"});
+  }
+});
