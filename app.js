@@ -12,6 +12,8 @@ const verifyToken = require('./middleware/authentication.middleware');
 
 //Create app
 const app = express();
+app.use(express.json());
+
 
 //Router
 app.use('/api', authentication);
