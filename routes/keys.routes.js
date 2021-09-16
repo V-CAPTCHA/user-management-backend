@@ -38,13 +38,13 @@ router.get('/', async (req, res) => {
 
 
 //Get key info
-router.get('/:key_value', async (req, res) => {
-  const key_value = req.params.key_value;
+router.get('/:key_id', async (req, res) => {
+  const key_id = req.params.key_id;
   const user_id = res.locals.user.user_id;
   
   //check null params
-  if(!key_value) {
-    return res.status(400).json({"message": "key values is requried"})
+  if(!key_id) {
+    return res.status(400).json({"message": "key id is requried"})
   }
 
   //find key in db
@@ -58,7 +58,7 @@ router.get('/:key_value', async (req, res) => {
     ],
     where: { 
       user_id: user_id,
-      key_value: key_value 
+      key_id: key_id 
     }
   });
 
@@ -93,8 +93,8 @@ router.post('/', async (req, res) => {
     user_id: user_id,
   }});
 
-  //if key has more than 5
-  if(count >= 5) {
+  //if key has more than 3
+  if(count >= 3) {
     return res.status(400).json({"message": "Your keys has reached its activation limit"});
   }
 
