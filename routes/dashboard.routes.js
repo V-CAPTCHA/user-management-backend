@@ -16,10 +16,6 @@ router.get('/total-request', async (req, res) => {
   //define return data
   var total_request = 0;
   var total_request_per_day = [];
-
-  //define association CaptchaKey and AuthenAction
-  CaptchaKey.hasMany(AuthenAction, { foreignKey: 'key_value' });
-  AuthenAction.belongsTo(CaptchaKey, { foreignKey: 'key_value', targetKey: 'key_value' });
   
   //total request of user
   await AuthenAction.findAndCountAll({
@@ -71,10 +67,6 @@ router.get('/valid-request', async (req, res) => {
   var total_request = 0;
   var valid_percent = 0;
   var valid_request_per_day = [];
-
-  //define association CaptchaKey and AuthenAction
-  CaptchaKey.hasMany(AuthenAction, { foreignKey: 'key_value' });
-  AuthenAction.belongsTo(CaptchaKey, { foreignKey: 'key_value', targetKey: 'key_value' });
   
   //total request of user
   await AuthenAction.findAndCountAll({
@@ -147,10 +139,6 @@ router.get('/invalid-request', async (req, res) => {
   var total_request = 0;
   var invalid_percent = 0;
   var invalid_request_per_day = [];
-
-  //define association CaptchaKey and AuthenAction
-  CaptchaKey.hasMany(AuthenAction, { foreignKey: 'key_value' });
-  AuthenAction.belongsTo(CaptchaKey, { foreignKey: 'key_value', targetKey: 'key_value' });
   
   //total request of user
   await AuthenAction.findAndCountAll({
