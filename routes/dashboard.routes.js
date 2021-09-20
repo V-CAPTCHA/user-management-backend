@@ -1,6 +1,7 @@
 const router = require('express').Router();
 const moment = require('moment');
 const sequelize = require('sequelize');
+const { Op, where } = require('sequelize')
 
 //Use sequelize model
 const db = require('../config/database.config');
@@ -16,52 +17,49 @@ router.get('/total-request', async (req, res) => {
   var total_request = 0;
   var total_request_per_day = [];
 
-  //All request
-  total_request = await AuthenAction.findAndCountAll({
-    where: { key_value: '1150123vcaptcha' }
-  })
+  //define association CaptchaKey and AuthenAction
+  CaptchaKey.hasMany(AuthenAction, { foreignKey: 'key_value' });
+  AuthenAction.belongsTo(CaptchaKey, { foreignKey: 'key_value', targetKey: 'key_value' });
   
-  if(!total_request) {
-    return res.status(200).json({"message": "request does not exist"})
-  }
+  //total request of user
+  await AuthenAction.findAndCountAll({
+    include: {
+      model: CaptchaKey,
+      where: { user_id: user_id }
+    }
+  }).then((result) => {
+    total_request = result.count
+  })
 
-
+ 
   //find 90 day before action in db 
   //atDate = 0 is current date
   for(var atDate=-89; atDate<1; atDate++) {
     var temp_date = moment().add(atDate, 'days').format('YYYY-MM-DD')
 
-    const total_action = await AuthenAction.findAndCountAll({
-      where: sequelize.and(
-        { 
-          key_value: '1150123vcaptcha'
-        },
-        sequelize.where(
+    await AuthenAction.findAndCountAll({
+      where: sequelize.where(
           sequelize.fn('date', sequelize.col('action_create')), '=', temp_date
-        ),
-      )
+      ),
+      include: {
+        model: CaptchaKey,
+        where: {
+          user_id: user_id
+        }
+      }
+
     })
-    .then((total_action) => {
-      total_request_per_day[atDate+89] = total_action.count;
+    .then((result) => {
+      total_request_per_day.push(result.count);
     })
   }
 
   //response
   res.status(200).json({
     'message':'get dashboard info successfully',
-    'total_request': total_request.count,
+    'total_request': total_request,
     'total_request_per_day': total_request_per_day,
   });
-
-
-
-
-
-
-
-
-
-
 });
 
 
