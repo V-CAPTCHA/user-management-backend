@@ -56,7 +56,7 @@ router.get('/total-request', async (req, res) => {
 
   //response
   res.status(200).json({
-    'message':'get dashboard info successfully',
+    'message':'get total request info successfully',
     'total_request': total_request,
     'total_request_per_day': total_request_per_day,
   });
@@ -88,15 +88,20 @@ router.get('/valid-request', async (req, res) => {
 
   //valid request of user
   await AuthenAction.findAndCountAll({
-    where: { action_checked: true },
+    where: { action_valid: 'pass' },
     include: {
       model: CaptchaKey,
       where: { user_id: user_id }
     }
   }).then((result) => {
     //calculate percentage
-    valid_percent = (result.count / total_request)*100;
-    valid_percent = valid_percent.toFixed(2) + '%';
+    if(!result.count) {
+      valid_percent = '-'
+    }
+    else{
+      valid_percent = (result.count / total_request)*100;
+      valid_percent = valid_percent.toFixed(2) + '%';
+    }
   })
 
   //find 90 day before action in db 
@@ -107,7 +112,7 @@ router.get('/valid-request', async (req, res) => {
     await AuthenAction.findAndCountAll({
       where: {
         [Op.and]: [
-          { action_checked: true },
+          { action_valid: 'pass' },
           sequelize.where(
             sequelize.fn('date', sequelize.col('action_create')), '=', temp_date
           ),
@@ -127,7 +132,7 @@ router.get('/valid-request', async (req, res) => {
 
   //response
   res.status(200).json({
-    'message':'get dashboard info successfully',
+    'message':'get valid request info successfully',
     'valid_percent': valid_percent,
     'valid_request_per_day': valid_request_per_day,
   });
