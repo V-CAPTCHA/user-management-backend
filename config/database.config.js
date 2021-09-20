@@ -33,4 +33,9 @@ db.authen_action = require('../models/authen_action')(sequelize, Sequelize);
 db.user = require('../models/user')(sequelize, Sequelize);
 
 
+//association
+//define association CaptchaKey and AuthenAction
+db.captcha_key.hasMany(db.authen_action, { foreignKey: 'key_value' });
+db.authen_action.belongsTo(db.captcha_key, { foreignKey: 'key_value', targetKey: 'key_value' });
+
 module.exports = db;
