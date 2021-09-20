@@ -141,14 +141,77 @@ router.get('/valid-request', async (req, res) => {
 
 //Invalid request
 router.get('/invalid-request', async (req, res) => {
+  const user_id = res.locals.user.user_id;
+
+  //define return data
+  var total_request = 0;
   var invalid_percent = 0;
   var invalid_request_per_day = [];
 
+  //define association CaptchaKey and AuthenAction
+  CaptchaKey.hasMany(AuthenAction, { foreignKey: 'key_value' });
+  AuthenAction.belongsTo(CaptchaKey, { foreignKey: 'key_value', targetKey: 'key_value' });
   
-  /*find invalid action
-  const invalid_action = await AuthenAction.findAndCountAll({
+  //total request of user
+  await AuthenAction.findAndCountAll({
+    include: {
+      model: CaptchaKey,
+      where: { user_id: user_id }
+    }
+  }).then((result) => {
+    total_request = result.count;
+  })
 
-  });*/
+  //invalid request of user
+  await AuthenAction.findAndCountAll({
+    where: { action_valid: 'fail' },
+    include: {
+      model: CaptchaKey,
+      where: { user_id: user_id }
+    }
+  }).then((result) => {
+    //calculate percentage
+    if(!result.count) {
+      invalid_percent = '-'
+    }
+    else{
+      invalid_percent = (result.count / total_request)*100;
+      invalid_percent = invalid_percent.toFixed(2) + '%';
+    }
+  })
+
+    //find 90 day before action in db 
+  //atDate = 0 is current date
+  for(var atDate=-89; atDate<1; atDate++) {
+    var temp_date = moment().add(atDate, 'days').format('YYYY-MM-DD')
+
+    await AuthenAction.findAndCountAll({
+      where: {
+        [Op.and]: [
+          { action_valid: 'fail' },
+          sequelize.where(
+            sequelize.fn('date', sequelize.col('action_create')), '=', temp_date
+          ),
+        ]
+      },      
+      include: {
+        model: CaptchaKey,
+        where: {
+          user_id: user_id
+        }
+      }
+    })
+    .then((result) => {
+      invalid_request_per_day.push(result.count);
+    })
+  }
+
+  //response
+  res.status(200).json({
+    'message':'get invalid request info successfully',
+    'valid_percent': invalid_percent,
+    'valid_request_per_day': invalid_request_per_day,
+  });
 });
 
 module.exports = router;
