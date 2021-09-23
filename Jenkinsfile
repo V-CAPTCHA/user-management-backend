@@ -22,19 +22,19 @@ pipeline {
                 stage('Docker PreBuild Clear old image') {
             steps {
                 
-                sh 'docker stop User_management_backend || true && docker rm User_management_backend || true'
+                sh 'docker stop user_management_backend || true && docker rm user_management_backend || true'
             }
         }
                 stage('Docker Build') {
             steps {
                 
-                sh 'docker build . -t User_management_backend'
+                sh 'docker build . -t user_management_backend'
             }
         }
                 stage('Docker Deploy') {
             steps {
                 
-                sh 'docker run -p 3000:3000/tcp --restart=always --name User_management_backend -d User_management_backend'
+                sh 'docker run -p 3000:3000/tcp --restart=always --name user_management_backend -d user_management_backend'
             }
         }
     }
