@@ -23,6 +23,7 @@ pipeline {
             steps {
                 
                 sh 'docker stop user_management_backend || true && docker rm user_management_backend || true'
+                sh 'docker image rm user_management_backend || true'
             }
         }
                 stage('Docker Build') {
@@ -34,7 +35,7 @@ pipeline {
                 stage('Docker Deploy') {
             steps {
                 
-                sh 'docker run -p 3000:3000/tcp --restart=always --name user_management_backend -d user_management_backend'
+                sh 'docker run -p 3000:3000/tcp --restart=always -d --name user_management_backend user_management_backend:latest'
             }
         }
     }
