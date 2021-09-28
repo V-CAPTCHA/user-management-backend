@@ -14,7 +14,13 @@ const verifyToken = require('./middleware/authentication.middleware');
 //Create app
 const app = express();
 app.use(express.json());
-app.use(cors())
+app.disable('x-powered-by')
+
+//CORS
+const corsOptions = {
+  origin: process.env.APP_URL
+}
+app.use(cors(corsOptions))
 
 //Router
 app.use('/api', authentication);
