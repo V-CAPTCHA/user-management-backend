@@ -136,16 +136,27 @@ router.post('/resetpassword', async (req, res) => {
 //Reset password
 router.put('/resetpassword', async (req, res) => {
   const token = req.body.token;
-  const new_password = await bcrypt.hash(req.body.new_password, 10);
+  var new_password = req.body.new_password
   var user_id = '';
+
+  //check null new password
+  if (!new_password) {
+    return res.status(400).json({ "message": "new password is required"})
+  }
+
+  //hash new password
+  new_password =  await bcrypt.hash(new_password, 10);
 
   //verify reset password token
   jwt.verify(token, process.env.SECRET_KEY, (err, decoded) => {
     //if token error
-    if (err) return res.status(400).json({"message": "token expired"});
+    if (err) {
+      return res.status(400).json({"message": "token expired"});
+    }
 
-    if (decoded.purpose === 'reset_password') 
+    if (decoded.purpose === 'reset_password') {
       user_id = decoded.user_id;
+    }
   });
 
   //check user in db
