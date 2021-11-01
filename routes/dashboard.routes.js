@@ -197,8 +197,8 @@ router.get('/invalid-request', async (req, res) => {
   //response
   res.status(200).json({
     'message':'get invalid request info successfully',
-    'valid_percent': invalid_percent,
-    'valid_request_per_day': invalid_request_per_day,
+    'invalid_percent': invalid_percent,
+    'invalid_request_per_day': invalid_request_per_day,
   });
 });
 
