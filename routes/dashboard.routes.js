@@ -80,7 +80,7 @@ router.get('/valid-request', async (req, res) => {
 
   //valid request of user
   await AuthenAction.findAndCountAll({
-    where: { action_valid: 'pass' },
+    where: { action_valid: 'PASSES' },
     include: {
       model: CaptchaKey,
       where: { user_id: user_id }
@@ -104,7 +104,7 @@ router.get('/valid-request', async (req, res) => {
     await AuthenAction.findAndCountAll({
       where: {
         [Op.and]: [
-          { action_valid: 'pass' },
+          { action_valid: 'PASSES' },
           sequelize.where(
             sequelize.fn('date', sequelize.col('action_create')), '=', temp_date
           ),
@@ -152,7 +152,7 @@ router.get('/invalid-request', async (req, res) => {
 
   //invalid request of user
   await AuthenAction.findAndCountAll({
-    where: { action_valid: 'fail' },
+    where: { action_valid: 'WRONG' },
     include: {
       model: CaptchaKey,
       where: { user_id: user_id }
@@ -176,7 +176,7 @@ router.get('/invalid-request', async (req, res) => {
     await AuthenAction.findAndCountAll({
       where: {
         [Op.and]: [
-          { action_valid: 'fail' },
+          { action_valid: 'WRONG' },
           sequelize.where(
             sequelize.fn('date', sequelize.col('action_create')), '=', temp_date
           ),
