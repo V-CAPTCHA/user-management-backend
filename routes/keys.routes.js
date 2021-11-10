@@ -5,6 +5,7 @@ const moment = require('moment');
 //Use sequelize model
 const db = require('../config/database.config');
 const CaptchaKey = db.captcha_key;
+const AuthenAction = db.authen_action;
 
 //Get all keys
 router.get('/', async (req, res) => {
@@ -175,6 +176,17 @@ router.delete('/:key_id', async (req, res) => {
   if(!key) {
     return res.status(400).json({"message": "key does not exist"});
   }
+
+  //delete auth action of key
+  await AuthenAction.destroy({
+    include: {
+      model: CaptchaKey,
+      where: { key_id: key_id }
+    },
+    where: {
+      key_value: key.key_value
+    }
+  });
 
   //delete key
   await CaptchaKey.destroy({
