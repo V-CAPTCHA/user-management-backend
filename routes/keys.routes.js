@@ -1,6 +1,7 @@
 const router = require('express').Router();
 const { nanoid } = require('nanoid');
 const moment = require('moment');
+const { body, validationResult } = require('express-validator');
 
 //Use sequelize model
 const db = require('../config/database.config');
@@ -77,7 +78,15 @@ router.get('/:key_id', async (req, res) => {
 
 
 //Create new key
-router.post('/', async (req, res) => {
+router.post('/', 
+body('key_name').isLength({ min: 2, max: 50 }),
+body('domain').isLength({ min: 2, max: 50 }),
+async (req, res) => {
+  const errors = validationResult(req)
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
   const key_name = req.body.key_name;
   const creation_date = moment().format('YYYY-MM-DD');
   const domain = req.body.domain;
@@ -116,7 +125,15 @@ router.post('/', async (req, res) => {
 
 
 //Edit key
-router.patch('/:key_id', async (req, res) => {
+router.patch('/:key_id', 
+body('key_name').isLength({ min: 2, max: 50 }),
+body('domain').isLength({ min: 2, max: 50 }),
+async (req, res) => {
+  const errors = validationResult(req)
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
   const user_id = res.locals.user.user_id;
   const key_id = req.params.key_id;
   const new_key_name = req.body.key_name;
