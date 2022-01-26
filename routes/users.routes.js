@@ -1,5 +1,6 @@
 const router = require('express').Router();
 const bcrypt = require('bcrypt');
+const { body, validationResult } = require('express-validator');
 
 //Use sequelize model
 const db = require('../config/database.config');
@@ -35,7 +36,15 @@ module.exports = router;
 
 
 //Change first name and last name
-router.post('/', async (req, res) => {
+router.post('/', 
+body('first_name').isLength({ min: 2, max: 50 }),
+body('last_name').isLength({ min: 2, max: 50 }),
+async (req, res) => {
+  const errors = validationResult(req)
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
   const user_id = res.locals.user.user_id;
   const first_name = req.body.first_name;
   const last_name = req.body.last_name;
@@ -103,7 +112,15 @@ router.delete('/', async (req, res) => {
 
 
 //Change password
-router.post('/password', async (req, res) => {
+router.post('/password', 
+body('current_password').isLength({ min: 8, max: 50 }),
+body('_new_password').isLength({ min: 8, max: 50 }),
+async (req, res) => {
+  const errors = validationResult(req)
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
   const current_password = req.body.current_password;
   const new_password = req.body.new_password;
   const user_id = res.locals.user.user_id;
