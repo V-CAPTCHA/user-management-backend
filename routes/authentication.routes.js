@@ -1,6 +1,7 @@
 const router = require('express').Router();
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const { body, validationResult } = require('express-validator');
 
 //Use sequelize model
 const db = require('../config/database.config');
@@ -12,7 +13,15 @@ const transporter = require('../config/mailer.config');
 
 
 //Login
-router.post('/login', async (req, res) => {
+router.post('/login', 
+body('email').isEmail(),
+body('password').isLength({ min: 8, max: 50 }),
+async (req, res) => {
+  const errors = validationResult(req)
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
   const email = req.body.email;
   const password = req.body.password;
 
@@ -52,7 +61,17 @@ router.post('/login', async (req, res) => {
 
 
 //Register
-router.post('/register', async (req, res) => {
+router.post('/register', 
+body('email').isEmail(),
+body('password').isLength({ min: 8, max: 50 }),
+body('first_name').isLength({ min: 2, max: 50 }),
+body('last_name').isLength({ min: 2, max: 50 }),
+async (req, res) => {
+  const errors = validationResult(req)
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
   const email = req.body.email;
   const password = req.body.password;
   const first_name = req.body.first_name;
@@ -88,7 +107,14 @@ router.post('/register', async (req, res) => {
 
 
 //Request to reset password
-router.post('/resetpassword', async (req, res) => {
+router.post('/resetpassword', 
+body('email').isEmail(),
+async (req, res) => {
+  const errors = validationResult(req)
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
   const email = req.body.email;
 
   //check null email
@@ -134,7 +160,15 @@ router.post('/resetpassword', async (req, res) => {
 
 
 //Reset password
-router.put('/resetpassword', async (req, res) => {
+router.put('/resetpassword',
+body('token').isJWT(),
+body('new_password').isLength({ min: 8, max: 50 }),
+async (req, res) => {
+  const errors = validationResult(req)
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
   const token = req.body.token;
   var new_password = req.body.new_password
   var user_id = '';
