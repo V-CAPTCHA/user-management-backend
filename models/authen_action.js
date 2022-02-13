@@ -44,6 +44,7 @@ module.exports = (sequelize, Sequelize) => {
         foreignKey: true,
       }
     },
+    //Options
     {
       timestamps: false,
       freezeTableName: true,

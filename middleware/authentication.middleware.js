@@ -4,22 +4,24 @@ const verifyToken = (req, res, next) => {
   //Get token
   const token = req.headers['x-access-token']
   
+  //If has token in headers
   if(token) {
-    //verify token
+    //Verify token
     jwt.verify(token, process.env.SECRET_KEY, (err, user) => {
-      //invalid token
+      //Invalid token
       if (err) {
         return res.status(403).json({'message': 'invalid token'})
       }
 
-      //set user info to res.locals
+      //Set user info to res.locals
       res.locals.user = user;
 
-      //next function after token checked
+      //Next function after token checked
       return next();
     });
   }
-  //if no token in headers
+
+  //If has not token in headers
   else {
     return res.status(401).json({'message': 'token is required for authentication'})
   }

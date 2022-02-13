@@ -1,7 +1,15 @@
+/*
+  We have 3 APIs for dashboard route
+  1. Total request API
+  2. Valid request API
+  3. Invalid request API
+*/
+
 const router = require('express').Router();
 const moment = require('moment');
 const sequelize = require('sequelize');
 const { Op } = require('sequelize')
+
 
 //Use sequelize model
 const db = require('../config/database.config');
@@ -9,15 +17,15 @@ const CaptchaKey = db.captcha_key;
 const AuthenAction = db.authen_action;
 
 
-//Total request
+//Total request API
 router.get('/total-request', async (req, res) => {
   const user_id = res.locals.user.user_id;
 
-  //define return data
+  //Define return data
   var total_request = 0;
   var total_request_per_day = [];
   
-  //total request of user
+  //Total request of user
   await AuthenAction.findAndCountAll({
     include: {
       model: CaptchaKey,
@@ -28,7 +36,7 @@ router.get('/total-request', async (req, res) => {
   })
 
  
-  //find 90 day before action in db 
+  //Find 90 day before action in db 
   //atDate = 0 is current date
   for(var atDate=-89; atDate<1; atDate++) {
     var temp_date = moment().add(atDate, 'days').format('YYYY-MM-DD')
@@ -44,13 +52,11 @@ router.get('/total-request', async (req, res) => {
         }
       }
 
-    })
-    .then((result) => {
+    }).then((result) => {
       total_request_per_day.push(result.count);
     })
   }
 
-  //response
   res.status(200).json({
     'message':'get total request info successfully',
     'total_request': total_request,
@@ -59,16 +65,16 @@ router.get('/total-request', async (req, res) => {
 });
 
 
-//Valid request
+//Valid request API
 router.get('/valid-request', async (req, res) => {
   const user_id = res.locals.user.user_id;
 
-  //define return data
+  //Define return data
   var total_request = 0;
   var valid_percent = 0;
   var valid_request_per_day = [];
   
-  //total request of user
+  //Total request of user
   await AuthenAction.findAndCountAll({
     include: {
       model: CaptchaKey,
@@ -78,7 +84,7 @@ router.get('/valid-request', async (req, res) => {
     total_request = result.count;
   })
 
-  //valid request of user
+  //Valid request of user
   await AuthenAction.findAndCountAll({
     where: { action_valid: 'PASSES' },
     include: {
@@ -86,17 +92,17 @@ router.get('/valid-request', async (req, res) => {
       where: { user_id: user_id }
     }
   }).then((result) => {
-    //calculate percentage
+    //Calculate percentage
     if(!result.count) {
-      valid_percent = '-'
+      valid_percent = '-';
     }
-    else{
+    else {
       valid_percent = (result.count / total_request)*100;
       valid_percent = valid_percent.toFixed(2) + '%';
     }
   })
 
-  //find 90 day before action in db 
+  //Find 90 day before action in db 
   //atDate = 0 is current date
   for(var atDate=-89; atDate<1; atDate++) {
     var temp_date = moment().add(atDate, 'days').format('YYYY-MM-DD')
@@ -116,13 +122,11 @@ router.get('/valid-request', async (req, res) => {
           user_id: user_id
         }
       }
-    })
-    .then((result) => {
+    }).then((result) => {
       valid_request_per_day.push(result.count);
     })
   }
 
-  //response
   res.status(200).json({
     'message':'get valid request info successfully',
     'valid_percent': valid_percent,
@@ -131,16 +135,16 @@ router.get('/valid-request', async (req, res) => {
 });
 
 
-//Invalid request
+//Invalid request API
 router.get('/invalid-request', async (req, res) => {
   const user_id = res.locals.user.user_id;
 
-  //define return data
+  //Define return data
   var total_request = 0;
   var invalid_percent = 0;
   var invalid_request_per_day = [];
   
-  //total request of user
+  //Total request of user
   await AuthenAction.findAndCountAll({
     include: {
       model: CaptchaKey,
@@ -150,7 +154,7 @@ router.get('/invalid-request', async (req, res) => {
     total_request = result.count;
   })
 
-  //invalid request of user
+  //Invalid request of user
   await AuthenAction.findAndCountAll({
     where: { action_valid: 'WRONG' },
     include: {
@@ -158,7 +162,7 @@ router.get('/invalid-request', async (req, res) => {
       where: { user_id: user_id }
     }
   }).then((result) => {
-    //calculate percentage
+    //Calculate percentage
     if(!result.count) {
       invalid_percent = '-'
     }
@@ -168,7 +172,7 @@ router.get('/invalid-request', async (req, res) => {
     }
   })
 
-    //find 90 day before action in db 
+  //Find 90 day before action in db 
   //atDate = 0 is current date
   for(var atDate=-89; atDate<1; atDate++) {
     var temp_date = moment().add(atDate, 'days').format('YYYY-MM-DD')
@@ -194,7 +198,6 @@ router.get('/invalid-request', async (req, res) => {
     })
   }
 
-  //response
   res.status(200).json({
     'message':'get invalid request info successfully',
     'invalid_percent': invalid_percent,

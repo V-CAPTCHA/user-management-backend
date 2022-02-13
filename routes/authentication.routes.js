@@ -1,7 +1,16 @@
+/*
+  We have 4 APIs for authenaction route
+  1. Login API
+  2. Register API
+  3. Request to reset password API
+  4. Reset password API
+*/
+
 const router = require('express').Router();
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { body, validationResult } = require('express-validator');
+
 
 //Use sequelize model
 const db = require('../config/database.config');
@@ -12,61 +21,62 @@ const User = db.user;
 const transporter = require('../config/mailer.config');
 
 
-//Login
+//Login API
 router.post('/login', 
-body('email').isEmail(),
-body('password').isLength({ min: 8, max: 50 }),
+  body('email').isEmail(),
+  body('password').isLength({ min: 8, max: 50 }),
 async (req, res) => {
+
+  //Validation
   const errors = validationResult(req)
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
   }
 
+  //Check null value
   const email = req.body.email;
   const password = req.body.password;
-
-  //check null input
   if (!(email && password))
     return res.status(400).json({ "message": "information is required" })
 
-  //check user in db
-  const user = await User.findOne({ where: { email: email }});
 
+  //Check exist user
+  const user = await User.findOne({ where: { email: email }});
   if (!user)
     return res.status(400).json({"message": "user does not exist "})
 
-  //compare password
+  //Compare password
   const isMatch = await bcrypt.compare(password, user.password);
 
-  //correct password
+  //Correct password
   if(isMatch) {
-    //create auth token
     const token = jwt.sign(
-      { user_id: user.user_id }, //payload
-      process.env.SECRET_KEY, //secret key
-      { expiresIn: "7d" } //exp
+      { user_id: user.user_id },  //payload
+      process.env.SECRET_KEY,     //secret key
+      { expiresIn: "7d" }         //expired
     );
 
-    //response token
     res.status(200).json({
       "message": "authorization successfully",
       "token": token,
     });
   }
-  //incorrect password
+
+  //Incorrect password
   else {
     res.status(401).json({"message": "incorrect password"});
   }
 })
 
 
-//Register
+//Register API
 router.post('/register', 
-body('email').isEmail(),
-body('password').isLength({ min: 8, max: 50 }),
-body('first_name').isLength({ min: 2, max: 50 }),
-body('last_name').isLength({ min: 2, max: 50 }),
+  body('email').isEmail(),
+  body('password').isLength({ min: 8, max: 50 }),
+  body('first_name').isLength({ min: 2, max: 50 }),
+  body('last_name').isLength({ min: 2, max: 50 }),
 async (req, res) => {
+  //Validation
   const errors = validationResult(req)
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
@@ -77,21 +87,20 @@ async (req, res) => {
   const first_name = req.body.first_name;
   const last_name = req.body.last_name;
 
-  //check null information
+  //Check null information
   if (!(email && password && first_name && last_name)) 
     return res.status(400).json({ "message": "information is required" })
 
-  //check user in db
+  //Check exist user
   const user = await User.findOne({ where: { email: email }});
-
   if (user) return res.status(400).json({
     "message": "user already exists"
   });
 
-  //hash password
+  //Password hashing
   const hashPassword = await bcrypt.hash(password, 8);
 
-  //create new user
+  //Create new user
   await User.create({
     email: email,
     password: hashPassword,
@@ -99,17 +108,17 @@ async (req, res) => {
     last_name: last_name,
   });
 
-  //response
   res.status(200).json({
     "message": "register successfully",
   });
 });
 
 
-//Request to reset password
+//Request to reset password API
 router.post('/resetpassword', 
-body('email').isEmail(),
+  body('email').isEmail(),
 async (req, res) => {
+  //Validation
   const errors = validationResult(req)
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
@@ -117,16 +126,15 @@ async (req, res) => {
 
   const email = req.body.email;
 
-  //check null email
+  //Check null email
   if (!email) return res.status(400).json({ "message": "email is required" });
 
-  //check user in db
+  //Check exist user
   const user = await User.findOne({ where: { email: email }});
-
   if (!user)
-    return res.status(400).json({"message": "user does not exist "})
+    return res.status(400).json({"message": "user does not exist "});
 
-  //create token for reset password
+  //Create token for reset password
   const token = jwt.sign(
     { 
       user_id: user.user_id,
@@ -136,7 +144,7 @@ async (req, res) => {
     { expiresIn: '7d' }
   );
 
-  //Send link to reset password to email
+  //Send link for reset password to email
   const mail = await transporter.sendMail({
     from: '"VCaptcha" <vcaptcha@gmail.com>',
     to: email,
@@ -159,29 +167,30 @@ async (req, res) => {
 });
 
 
-//Reset password
+//Reset password API
 router.put('/resetpassword',
-body('token').isJWT(),
-body('new_password').isLength({ min: 8, max: 50 }),
+  body('token').isJWT(),
+  body('new_password').isLength({ min: 8, max: 50 }),
 async (req, res) => {
+  //Validation
   const errors = validationResult(req)
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
   }
 
   const token = req.body.token;
-  var new_password = req.body.new_password
+  var new_password = req.body.new_password;
   var user_id = '';
 
-  //check null new password
+  //Check null new password
   if (!new_password) {
     return res.status(400).json({ "message": "new password is required"})
   }
 
-  //hash new password
+  //New password hashing
   new_password =  await bcrypt.hash(new_password, 10);
 
-  //verify reset password token
+  //Verify reset password token
   jwt.verify(token, process.env.SECRET_KEY, (err, decoded) => {
     //if token error
     if (err) {
@@ -193,21 +202,19 @@ async (req, res) => {
     }
   });
 
-  //check user in db
+  //Check exist user
   const user = await User.findOne({ where: { user_id: user_id } });
 
   if (!user) 
     return res.status(400).json({"message": "user does not exist"});
 
-  //update password
+  //Update password
   user.password = new_password;
   await user.save();
 
-  //response
   res.status(200).json({
     'message': 'reset password sucessfully'
   });
-
 });
 
 module.exports = router;
