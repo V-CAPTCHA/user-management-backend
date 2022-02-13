@@ -32,7 +32,7 @@ module.exports = (sequelize, Sequelize) => {
         field: 'key_value',
       },
     },
-    //options
+    //Options
     {
       timestamps: false,
       freezeTableName: true,
